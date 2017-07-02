@@ -1,97 +1,113 @@
-// данные методом создает очередной дум элемент, отображения задачи.
-function createTodoItem(title) {
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'checkbox';
+// самовызывающая функция.
+const main = (document => {
+    function createElement(tag, props, ...children) {
+        const element = document.createElement(tag);
 
-    const label = document.createElement('label');
-    label.innerText = title;
-    label.className = 'title';
+        Object.keys(props).forEach(key => element[key] = props[key]);
 
-    const editInput = document.createElement('input');
-    editInput.type = 'text';
-    editInput.className = 'textfield';
+        if (children.length > 0) {
+            children.forEach(child => {
+                if (typeof child === 'string') {
+                    child = document.createTextNode(child);
+                }
 
-    const editButton = document.createElement('button');
-    editButton.innerText = 'Изменить';
-    editButton.className = 'edit';
+                element.appendChild(child);
+            });
+        }
 
-    const deleteButton = document.createElement('button');
-    deleteButton.innerText = 'Удалить';
-    deleteButton.className = 'delete';
-
-    const listItem = document.createElement('li');
-    listItem.className = 'todo-item';
-
-    listItem.appendChild(checkbox);
-    listItem.appendChild(label);
-    listItem.appendChild(editInput);
-    listItem.appendChild(editButton);
-    listItem.appendChild(deleteButton);
-
-    bindEvents(listItem);
-
-    return listItem;
-}
-
-// привязываем событие
-function bindEvents(todoItem) {
-    const checkbox = todoItem.querySelector('.checkbox');
-    const editButton = todoItem.querySelector('button.edit');
-    const deleteButton = todoItem.querySelector('button.delete');
-
-    // подписываемся(слушаем) на событие у этих элементов
-    checkbox.addEventListener('change', toggleTodoItem);
-    editButton.addEventListener('click', editTodoItem);
-    deleteButton.addEventListener('click', deleteTodoItem);
-
-}
-
-// проверка на значения, при получении значении передает управления функции для создания нового айтема,
-function addTodoItem(event) {
-    event.preventDefault();
-
-    if(addInput.value === '') return alert('Необходимо ввести название задачи.');
-
-    const todoItem = createTodoItem(addInput.value);
-    // добавляем новый айтем.
-    todoList.appendChild(todoItem);
-    // чистим поле.
-    addInput.value = '';
-}
-
-function toggleTodoItem() {
-    const listItem = this.parentNode;
-    listItem.classList.toggle('completed');
-}
-
-function editTodoItem() {
-    const listItem = this.parentNode;
-    const title = listItem.querySelector('.title');
-    const editInput = listItem.querySelector('.textfield');
-    const isEditing = listItem.classList.contains('editing');
-
-    if (isEditing) {
-        title.innerText = editInput.value;
-        this.innerText = 'Изменить';
-    } else {
-        editInput.value = title.innerText;
-        this.innerText = 'Сохранить';
+        return element;
     }
 
-    listItem.classList.toggle('editing');
-}
+    // данные методом создает очередной дум элемент, отображения задачи.
+    function createTodoItem(title) {
+        const checkbox = createElement('input', {type: 'checkbox', className: 'checkbox'});
+        const label = createElement('label', {className: 'title'}, title);
+        const editInput = createElement('input', {type: 'text', className: 'textfield'});
+        const editButton = createElement('button', {className: 'edit'}, 'Изменить');
+        const deleteButton = createElement('button', {className: 'delete'}, 'Удалить');
+        const listItem = createElement('li', {className: 'todo-item'}, checkbox, label, editInput, editButton, deleteButton);
 
-function deleteTodoItem() {
-    const listItem = this.parentNode;
-    todoList.removeChild(listItem);
-}
+        bindEvents(listItem);
 
-//
-const todoForm = document.getElementById('todo-form');
-const addInput = document.getElementById('add-input');
-const todoList = document.getElementById('todo-list');
-const todoItems = document.querySelectorAll('.todo-item');
+        return listItem;
+    }
 
-// слушает кнопку формы с id todo-form
-todoForm.addEventListener('submit', addTodoItem);
+    // привязываем событие
+    function bindEvents(todoItem) {
+        const checkbox = todoItem.querySelector('.checkbox');
+        const editButton = todoItem.querySelector('button.edit');
+        const deleteButton = todoItem.querySelector('button.delete');
+
+        // подписываемся(слушаем) на событие у этих элементов
+        checkbox.addEventListener('change', toggleTodoItem);
+        editButton.addEventListener('click', editTodoItem);
+        deleteButton.addEventListener('click', deleteTodoItem);
+
+    }
+
+    // проверка на значения, при получении значении передает управления функции для создания нового айтема,
+    function addTodoItem(event) {
+        event.preventDefault();
+
+        if(addInput.value === '') return alert('Необходимо ввести название задачи.');
+
+        const todoItem = createTodoItem(addInput.value);
+        // добавляем новый айтем.
+        todoList.appendChild(todoItem);
+        // чистим поле.
+        addInput.value = '';
+    }
+
+    function toggleTodoItem() {
+        const listItem = this.parentNode;
+        listItem.classList.toggle('completed');
+    }
+
+    function editTodoItem() {
+        const listItem = this.parentNode;
+        const title = listItem.querySelector('.title');
+        const editInput = listItem.querySelector('.textfield');
+        const isEditing = listItem.classList.contains('editing');
+
+        if (isEditing) {
+            title.innerText = editInput.value;
+            this.innerText = 'Изменить';
+        } else {
+            editInput.value = title.innerText;
+            this.innerText = 'Сохранить';
+        }
+
+        listItem.classList.toggle('editing');
+    }
+
+    function deleteTodoItem() {
+        const listItem = this.parentNode;
+        todoList.removeChild(listItem);
+    }
+
+    function load() {
+        const data = JSON.parse(localStorage.getItem('todos'));
+        return data;
+    }
+
+    function save(data) {
+        const string = JSON.stringify(data);
+        localStorage.setItem('todos', string);
+    }
+
+    //
+    const todoForm = document.getElementById('todo-form');
+    const addInput = document.getElementById('add-input');
+    const todoList = document.getElementById('todo-list');
+    const todoItems = document.querySelectorAll('.todo-item');
+
+    function main() {
+        // слушает кнопку формы с id todo-form
+        todoForm.addEventListener('submit', addTodoItem);
+        todoItems.forEach(item => bindEvents(item));
+    }
+
+    return main();
+})(document);
+
+main();
